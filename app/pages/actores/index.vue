@@ -1,22 +1,44 @@
 <template>
-    <div>
+  <div class="p-4 sm:p-6 lg:p-8 space-y-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <TitulosPages
+        titulo="Actores"
+        subtitulo="Catálogo de actores políticos monitoreados"
+        icon="i-lucide-users"
+      />
 
+      <UButton
+        label="Nuevo actor"
+        icon="i-lucide-plus"
+        class="w-full justify-center sm:w-auto"
+        @click="abrirAlta"
+      />
+    </div>
 
-<TitulosPages />
-<!-- Debe de tener dos botones de inicio uno para ver actores la tabla de modificaion y otro para crear un actor nuevo -->
-<div> Boton ver actores , boton crear actor nuevo</div>
-<!-- Debe de incluir todos los campos con join asegurando asi que los vea el usuario  debe de ser un componente-->
-<TablaActores />    
+    <UCard variant="subtle">
+      <TablaActores ref="tablaRef" @editar="abrirEdicion" />
+    </UCard>
 
-<NuevoActor />
-
-</div>
+    <NuevoActor
+      v-model:open="modalAbierto"
+      :actor="actorEditando"
+      @guardado="tablaRef?.refresh()"
+    />
+  </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
+const modalAbierto = ref(false)
+const actorEditando = ref<any>(null)
+const tablaRef = ref()
 
+function abrirAlta() {
+  actorEditando.value = null
+  modalAbierto.value = true
+}
+
+function abrirEdicion(actor: any) {
+  actorEditando.value = actor
+  modalAbierto.value = true
+}
 </script>
-
-<style scoped>
-
-</style>

@@ -1,6 +1,6 @@
 # SPEC 03 — CRUD de Actores
 
-> **Estado:** APROBADO
+> **Estado:** IMPLEMENTADO
 > **Depende de:** SPEC 01
 > **Fecha:** 2026-08-19
 > **Objetivo:** Construir el CRUD completo de actores (alta, edición, activar/desactivar) con selector de institución y curaduría de bots vía `bot_actores`, agregando una constraint `UNIQUE` real en `actores.nombre` en Mnemosine y un endpoint mínimo de lectura de `bots` que reutilizará el spec 04.
@@ -13,7 +13,7 @@
 - `shared/schemas/actores.ts` (Zod) para crear y editar.
 - Endpoints Nitro: `GET/POST /api/actores`, `PUT /api/actores/[id]`. El `GET` resuelve el nombre de la institución y la lista de `bot_id` curados por actor (no expone las relaciones crudas de Prisma).
 - `server/api/bots/index.get.ts` (nuevo, solo lectura): `findMany` de `bots` ordenado por `nombre`. Es la base que el spec 04 extenderá con `index.post.ts`/`[id].put.ts` — este spec no construye alta/edición de bots.
-- `TablaActores.vue` (reescrito): tabla con columnas nombre/institución/puesto/activo (badge)/acciones, con buscador de texto por nombre (filtro client-side).
+- `TablaActores.vue` (reescrito): tabla con columnas nombre/institución/puesto/circunstancia/activo (badge)/acciones, con buscador de texto por nombre y filtros adicionales (todos client-side) por institución, por estado/municipio (derivados de las instituciones ya cargadas) y por bot curado.
 - `NuevoActor.vue` (reescrito): modal con formulario completo (nombre, institución, dependencia, puesto, vigente_desde/hasta, circunstancia/circunstancia_hasta, nota, switch `activo` en edición) + botonero multi-select de bots `alcance='curado' AND activo=true` + nota informativa (no editable) de los bots `alcance='todos' AND activo=true`.
 - `app/pages/actores/index.vue`: título con ícono (`i-lucide-users`), botón "Nuevo actor" + tabla, todo en la misma ruta.
 
@@ -61,7 +61,8 @@ export default {
 Convenciones:
 
 - `bots_curados` no es una columna de `actores` — es la lista de `bot_id` que el endpoint usa para sincronizar filas en `bot_actores` dentro de una transacción Prisma (`$transaction`). Nunca se escribe nada en `actores.bots`.
-- El `GET /api/actores` reshapea la respuesta a `{ id, nombre, institucion_id, institucion, dependencia, puesto, vigente_desde, vigente_hasta, circunstancia, circunstancia_hasta, nota, activo, bots_curados }`, donde `institucion` es el nombre ya resuelto y `bots_curados` es `number[]` (los `bot_id` de sus filas en `bot_actores`). Mismo patrón de reshape que `GET /api/temas` en el spec 02 — no se usan las vistas `actores_completo`/`temas_completo` porque no están modeladas en `schema.prisma` (Prisma no introspecta vistas sin el preview feature `views`, que no está activado).
+- El `GET /api/actores` reshapea la respuesta a `{ id, nombre, institucion_id, institucion, institucion_nivel, institucion_estado, institucion_municipio, dependencia, puesto, vigente_desde, vigente_hasta, circunstancia, circunstancia_hasta, nota, activo, bots_curados }`, donde `institucion*` son los campos ya resueltos de la institución relacionada (para poder filtrar la tabla por estado/municipio sin otra llamada) y `bots_curados` es `number[]` (los `bot_id` de sus filas en `bot_actores`). Mismo patrón de reshape que `GET /api/temas` en el spec 02 — no se usan las vistas `actores_completo`/`temas_completo` porque no están modeladas en `schema.prisma` (Prisma no introspecta vistas sin el preview feature `views`, que no está activado).
+- Los filtros de `TablaActores.vue` (institución, estado, municipio, bot curado) son 100% client-side sobre los datos ya traídos por `GET /api/actores` (más `GET /api/bots` para poblar el select de bot) — no generan llamadas de red adicionales. Las opciones de estado/municipio se derivan (`Set` de valores únicos) de los `institucion_estado`/`institucion_municipio` presentes en la respuesta, no de un catálogo aparte. El filtro de bot solo lista bots `alcance='curado'` (los `alcance='todos'` aplican a todos los actores por definición, filtrar por ellos no aporta nada).
 - `GET /api/bots` devuelve todas las filas de `bots` sin filtrar; el filtro por `alcance`/`activo` para armar las dos listas (curado seleccionable vs. todos informativo) se hace en `NuevoActor.vue`, igual que `NuevoTema.vue` filtra categorías en el cliente.
 - `activo` solo se edita a través de `actualizar`, nunca se manda en `crear` (nace `true` por default de la BD, mismo patrón que `instituciones.activa`).
 
@@ -70,26 +71,26 @@ Convenciones:
 1. Confirmar con el usuario y ejecutar `ALTER TABLE actores ADD CONSTRAINT actores_nombre_key UNIQUE (nombre)` contra Mnemosine, luego `npx prisma db pull && npx prisma generate`. Prueba manual: `schema.prisma` muestra `nombre String @unique` en `model actores`.
 2. Crear `shared/schemas/actores.ts`. Prueba manual: `pnpm typecheck` reconoce `useZodSchemas().actores`.
 3. Crear `server/api/bots/index.get.ts` (`findMany` ordenado por `nombre`). Prueba manual: `curl http://localhost:3000/api/bots` devuelve los 3 bots reales (ARGOS TRC MARS, ARGOS LAGUNA, SINTETIA) con su `alcance`/`activo`.
-4. Crear `server/api/actores/index.get.ts`: `findMany` con `include` de `instituciones` y `bot_actores`, reshapeado como se describe arriba. Prueba manual: `curl http://localhost:3000/api/actores` devuelve 213 filas con `institucion` como texto y `bots_curados` como array de ids.
+4. Crear `server/api/actores/index.get.ts`: `findMany` con `include` de `instituciones` y `bot_actores`, reshapeado como se describe arriba (incluye `institucion_nivel`/`institucion_estado`/`institucion_municipio`). Prueba manual: `curl http://localhost:3000/api/actores` devuelve 213 filas con `institucion` como texto, sus campos de ubicación y `bots_curados` como array de ids.
 5. Crear `server/api/actores/index.post.ts`: valida con `actores.crear`, crea el actor y sus filas `bot_actores` en una transacción, captura `P2002` → 409 "Ya existe un actor con ese nombre". Prueba manual: POST con nombre repetido → 409; POST válido con `bots_curados` → 201 y filas nuevas en `bot_actores`.
 6. Crear `server/api/actores/[id].put.ts`: valida con `actores.actualizar`, actualiza el actor, borra las filas `bot_actores` existentes del actor y re-inserta las de `bots_curados` (todo en una transacción), 404/409. Prueba manual: PUT que quita y agrega bots refleja el diff correcto en `bot_actores`.
-7. Reescribir `TablaActores.vue`: `useFetch('/api/actores')`, buscador de texto que filtra por `nombre` client-side, columnas nombre/institución/puesto/activo (badge)/acciones. Prueba manual: muestra los 213 actores reales y el buscador filtra en vivo.
+7. Reescribir `TablaActores.vue`: `useFetch('/api/actores')` + `useFetch('/api/bots')`, buscador de texto por `nombre` y selects de filtro por institución, estado, municipio y bot curado (todos client-side, combinables entre sí con AND), columnas nombre/institución/puesto/circunstancia/activo (badge)/acciones. Prueba manual: muestra los 213 actores reales; cada filtro reduce la tabla correctamente y se pueden combinar.
 8. Reescribir `NuevoActor.vue`: formulario completo + `USelect` de institución (poblado desde `/api/instituciones`, filtrado a `activa=true` más la ya asignada si se está editando) + botonero multi-select de bots curados (poblado desde `/api/bots` filtrado a `alcance='curado' AND activo`) + nota informativa no editable de bots `alcance='todos' AND activo`. Prueba manual: crear/editar un actor de prueba con institución y bots se refleja sin recargar; la nota de bots "todos" aparece y no es interactiva.
 9. Editar `app/pages/actores/index.vue`: título con ícono `i-lucide-users`, botón "Nuevo actor" + `TablaActores`. Prueba manual: flujo completo alta → editar → toggle `activo` → editar curaduría de bots, todo sin recargar.
 
 ## Acceptance criteria
 
-- [ ] La constraint `UNIQUE` en `actores.nombre` existe en Mnemosine y `schema.prisma` la refleja tras el `db pull`.
-- [ ] `GET /api/actores` responde 200 con los 213 actores reales, institución resuelta por nombre y `bots_curados` por actor.
-- [ ] `GET /api/bots` responde 200 con los bots reales existentes.
-- [ ] Crear un actor nuevo con institución y bots curados seleccionados lo agrega a la tabla sin recargar, y crea las filas correspondientes en `bot_actores`.
-- [ ] Crear un actor con `nombre` duplicado responde 409 legible (usando la constraint real de Postgres, no solo una validación de la app).
-- [ ] El formulario muestra una nota informativa (no editable) de los bots `alcance='todos'` activos.
-- [ ] Editar un actor (institución, fechas, nota, `activo` y bots curados) persiste el cambio y actualiza `bot_actores` correctamente: agrega los bots nuevos, quita los deseleccionados.
-- [ ] El select de institución en alta solo lista instituciones `activa=true`; en edición también muestra la institución ya asignada aunque esté inactiva.
-- [ ] La tabla de actores tiene un buscador por nombre que filtra client-side sin llamadas de red adicionales.
-- [ ] No existe borrado físico de actores, y las filas de `bot_actores` solo cambian como resultado de editar el actor (nunca hay un botón de "eliminar").
-- [ ] `pnpm lint` y `pnpm typecheck` pasan sin errores nuevos (los ya documentados como preexistentes en los specs 01/02 no cuentan).
+- [x] La constraint `UNIQUE` en `actores.nombre` existe en Mnemosine y `schema.prisma` la refleja tras el `db pull`.
+- [x] `GET /api/actores` responde 200 con los actores reales (213 al momento de escribir este spec), institución resuelta por nombre y `bots_curados` por actor.
+- [x] `GET /api/bots` responde 200 con los bots reales existentes.
+- [x] Crear un actor nuevo con institución y bots curados seleccionados lo agrega a la tabla sin recargar, y crea las filas correspondientes en `bot_actores`.
+- [x] Crear un actor con `nombre` duplicado responde 409 legible (usando la constraint real de Postgres, no solo una validación de la app).
+- [x] El formulario muestra una nota informativa (no editable) de los bots `alcance='todos'` activos (etiquetado en la UI como "bot segmentado"/"bots segmentados").
+- [x] Editar un actor (institución, fechas, nota, `activo` y bots curados) persiste el cambio y actualiza `bot_actores` correctamente: agrega los bots nuevos, quita los deseleccionados.
+- [x] El select de institución en alta solo lista instituciones `activa=true`; en edición también muestra la institución ya asignada aunque esté inactiva.
+- [x] La tabla de actores tiene un buscador por nombre y filtros por institución, estado, municipio y bot curado, todos client-side sin llamadas de red adicionales, combinables entre sí. Además (ampliación post-implementación): todas las columnas de datos tienen headers ordenables con un clic.
+- [x] No existe borrado físico de actores, y las filas de `bot_actores` solo cambian como resultado de editar el actor (nunca hay un botón de "eliminar").
+- [x] `pnpm lint` y `pnpm typecheck` pasan sin errores nuevos (los ya documentados como preexistentes en los specs 01/02 no cuentan).
 
 ## Decisiones
 
@@ -100,6 +101,10 @@ Convenciones:
 - **Sí:** incluir la curaduría de bots (multi-select + nota informativa) en este spec, no en el spec 04. Solo necesita lectura de `bots` (que ya tiene datos reales), y es la regla de negocio central del formulario de actor documentada en `CLAUDE.md`/`PANEL_ARGOS.md`.
 - **Sí:** incluir los 4 campos de fecha (`vigente_desde`, `vigente_hasta`, `circunstancia`, `circunstancia_hasta`) y `nota` como editables desde ahora — son parte del dato real del actor, no un extra.
 - **Sí:** buscador de texto en `TablaActores.vue` (213 filas, más del doble que instituciones o temas). Filtro client-side simple, sin llamadas de red adicionales.
+- **Sí (ampliado durante la implementación):** además del buscador por nombre, `TablaActores.vue` suma filtros por institución, estado, municipio (derivados de las instituciones ya cargadas, sin catálogo aparte) y bot curado — decisión tomada a mitad de implementación del paso 7 porque 213 filas sin más forma de acotar resultaba poco usable. El `GET /api/actores` se amplía para incluir `institucion_nivel`/`institucion_estado`/`institucion_municipio` (no solo `institucion`) para soportarlo sin llamadas extra.
+- **Sí (ampliado durante la implementación):** `TablaActores.vue` muestra todas las columnas de datos del actor (dependencia, ambos rangos de fechas, circunstancia, nota, bots resueltos por nombre), con headers ordenables con un clic (sorting nativo de TanStack Table vía `UTable`), en vez del set reducido de columnas planeado originalmente.
+- **Sí:** en la UI, "bot alcance='curado'" se etiqueta como "bot segmentado"/"bots segmentados" (placeholder del filtro, label del checkbox group). Es solo texto visible — el valor real en la BD (`bots.alcance = 'curado'`) y los nombres de campos/variables internos (`bots_curados`) no cambian.
+- **No (fuera de alcance, recordado durante la implementación):** tarjeta de conteo de totales (actores/temas/instituciones) en `HeroStadisitics.vue` — ya estaba reservada para el spec 06 desde los specs 01/02; se mantiene ahí.
 - **Reutiliza sin volver a decidir (mismo patrón que specs 01/02):** un solo componente para alta y edición (prop `actor?`), sin borrado físico, sin auth todavía, sin validación de duplicados en vivo mientras se escribe, modal `UModal`+`UForm` con `nuxt-zod`, reshape del `GET` en vez de exponer relaciones crudas de Prisma.
 
 ## Risks
