@@ -1,6 +1,6 @@
 # SPEC 02 — CRUD de Temas y Categorías
 
-> **Estado:** APROBADO
+> **Estado:** IMPLEMENTADO
 > **Depende de:** SPEC 01
 > **Fecha:** 2026-08-19
 > **Objetivo:** Construir el CRUD de temas (con selección de categoría principal y secundaria) y de categorias_tema, reutilizando el patrón de endpoint Nitro + Zod + tabla/modal ya establecido en el spec 01.
@@ -79,15 +79,15 @@ Convenciones:
 
 ## Acceptance criteria
 
-- [ ] `GET /api/categorias-tema` y `GET /api/temas` responden 200 con datos reales de Mnemosine.
-- [ ] Crear una categoría nueva la agrega a su tabla sin recargar.
-- [ ] Crear un tema nuevo con categoría principal (y opcionalmente secundaria distinta) lo agrega a la tabla sin recargar.
-- [ ] Elegir la misma categoría como principal y secundaria bloquea el guardado con un mensaje claro, tanto en el formulario como si se manda directo por API.
-- [ ] Nombre duplicado (en categorías o en temas) responde 409 legible.
-- [ ] Editar un tema existente (incluida su categoría o el toggle `activo`) persiste el cambio y se refleja en la tabla.
-- [ ] No existe borrado físico de categorías ni de temas.
-- [ ] La página `/temas` no requiere navegar a otra ruta para gestionar categorías.
-- [ ] `pnpm lint` y `pnpm typecheck` pasan sin errores nuevos.
+- [x] `GET /api/categorias-tema` y `GET /api/temas` responden 200 con datos reales de Mnemosine.
+- [x] Crear una categoría nueva la agrega a su tabla sin recargar.
+- [x] Crear un tema nuevo con categoría principal (y opcionalmente secundaria distinta) lo agrega a la tabla sin recargar.
+- [x] Elegir la misma categoría como principal y secundaria bloquea el guardado con un mensaje claro, tanto en el formulario como si se manda directo por API.
+- [x] Nombre duplicado (en categorías o en temas) responde 409 legible.
+- [x] Editar un tema existente (incluida su categoría o el toggle `activo`) persiste el cambio y se refleja en la tabla.
+- [x] No existe borrado físico de categorías ni de temas.
+- [x] La página `/temas` no requiere navegar a otra ruta para gestionar categorías.
+- [x] `pnpm lint` y `pnpm typecheck` pasan sin errores nuevos (los errores existentes en ambos comandos son preexistentes a este spec — ver nota de implementación).
 
 ## Decisiones
 

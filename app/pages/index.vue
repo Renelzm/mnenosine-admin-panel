@@ -1,6 +1,6 @@
 <template>
   <div>
-   <TitulosPages />
+   <TitulosPages titulo="ARGOS" />
 
    <HeroStadisitics />
 

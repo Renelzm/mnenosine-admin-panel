@@ -10,6 +10,19 @@ export default defineNuxtConfig({
     zodVersion: 'v4'
   },
 
+  icon: {
+    provider: 'server',
+    clientBundle: {
+      icons: [
+        'lucide:users',
+        'lucide:landmark',
+        'lucide:tag',
+        'lucide:bot',
+        'lucide:pencil'
+      ]
+    }
+  },
+
   devtools: {
     enabled: true
   },

@@ -43,7 +43,7 @@ const emit = defineEmits<{
   editar: [institucion: Institucion]
 }>()
 
-const { data, refresh, status } = await useFetch<Institucion[]>('/api/instituciones')
+const { data, refresh, status } = useFetch<Institucion[]>('/api/instituciones')
 
 const columns: TableColumn<Institucion>[] = [
   { accessorKey: 'nombre', header: 'Nombre' },

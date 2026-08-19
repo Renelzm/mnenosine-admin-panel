@@ -41,4 +41,5 @@ function abrirEdicion(institucion: any) {
   institucionEditando.value = institucion
   modalAbierto.value = true
 }
+
 </script>
