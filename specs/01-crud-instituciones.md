@@ -1,6 +1,6 @@
 # SPEC 01 — CRUD de Instituciones
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** Ninguno
 > **Fecha:** 2026-08-19
 > **Objetivo:** Construir el CRUD completo de instituciones (listar, crear, editar, activar/desactivar) contra datos reales de Mnemosine, y fijar el patrón de endpoint Nitro + Zod + tabla/formulario que reutilizarán los demás catálogos (temas, bots, actores).
@@ -39,19 +39,18 @@ No se agregan tablas ni columnas nuevas en Postgres — reutiliza `instituciones
 ```ts
 // shared/schemas/instituciones.ts
 const NIVELES = ['MUNICIPAL', 'ESTATAL', 'FEDERAL', 'AUTONOMO', 'IP', 'EDUCACION', 'OTROS'] as const
-const ESTADOS = ['COAHUILA', 'DURANGO', 'NACIONAL', 'INTERNACIONAL'] as const
 
 export default {
   crear: z.object({
     nombre: z.string().min(3),
     nivel: z.enum(NIVELES),
-    estado: z.enum(ESTADOS).optional(),
+    estado: z.string().optional(),
     municipio: z.string().optional()
   }),
   actualizar: z.object({
     nombre: z.string().min(3),
     nivel: z.enum(NIVELES),
-    estado: z.enum(ESTADOS).optional(),
+    estado: z.string().optional(),
     municipio: z.string().optional(),
     activa: z.boolean()
   })
@@ -79,16 +78,16 @@ Convenciones:
 
 ## Acceptance criteria
 
-- [ ] `pnpm dev` levanta sin errores y `/instituciones` reemplaza a `/intituciones` (la ruta vieja ya no existe).
-- [ ] `GET /api/instituciones` responde 200 con las instituciones reales de Mnemosine.
-- [ ] Crear una institución con nombre nuevo desde el modal la agrega a la tabla sin recargar la página.
-- [ ] Crear una institución con un `nombre` ya existente muestra un error 409 legible en el formulario, no una excepción sin manejar.
-- [ ] Editar nivel/estado/municipio de una institución existente persiste el cambio y se refleja en la tabla.
-- [ ] El switch de `activa`/inactiva cambia el estado en BD y en la tabla.
-- [ ] No existe ningún botón ni endpoint de borrado físico de instituciones.
-- [ ] La barra de navegación tiene links funcionales a `/actores`, `/instituciones`, `/temas`, `/bots`.
-- [ ] La consola del navegador no muestra advertencias de "Failed to resolve component: TemplateMenu".
-- [ ] `pnpm lint` y `pnpm typecheck` pasan sin errores nuevos.
+- [x] `pnpm dev` levanta sin errores y `/instituciones` reemplaza a `/intituciones` (la ruta vieja ya no existe).
+- [x] `GET /api/instituciones` responde 200 con las instituciones reales de Mnemosine.
+- [x] Crear una institución con nombre nuevo desde el modal la agrega a la tabla sin recargar la página.
+- [x] Crear una institución con un `nombre` ya existente muestra un error 409 legible en el formulario, no una excepción sin manejar.
+- [x] Editar nivel/estado/municipio de una institución existente persiste el cambio y se refleja en la tabla.
+- [x] El switch de `activa`/inactiva cambia el estado en BD y en la tabla.
+- [x] No existe ningún botón ni endpoint de borrado físico de instituciones.
+- [x] La barra de navegación tiene links funcionales a `/actores`, `/instituciones`, `/temas`, `/bots`.
+- [x] La consola del navegador no muestra advertencias de "Failed to resolve component: TemplateMenu".
+- [x] `pnpm lint` y `pnpm typecheck` pasan sin errores nuevos.
 
 ## Decisiones
 
@@ -99,6 +98,7 @@ Convenciones:
 - **Sí:** dejar los endpoints sin protección de auth por ahora. El panel no está desplegado públicamente todavía; el spec 05 cierra esto antes del deploy (spec 07).
 - **No:** validar duplicados de `nombre` en vivo mientras se escribe. Un POST/PUT con 409 claro alcanza para el volumen de datos actual (~64 filas) y evita llamadas de red extra en cada tecla.
 - **Sí:** limpiar `app.vue` (quitar `TemplateMenu` inexistente y branding del starter) dentro de este spec, aunque no sea "instituciones" en sentido estricto — es el primer spec que corre la app de verdad y ese error/branding aparece en cada página del panel.
+- **No:** `estado` como select fijo de 4 opciones (COAHUILA/DURANGO/NACIONAL/INTERNACIONAL). Decisión original revertida durante la implementación (paso 5): el usuario no quiere limitarlo a esa región, y no hay un catálogo cerrado de "estados" para instituciones IP/educación/federales. Pasa a texto libre, igual que `municipio`.
 
 ## Risks
 

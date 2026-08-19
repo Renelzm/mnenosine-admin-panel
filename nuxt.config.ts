@@ -2,8 +2,13 @@
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
-    '@nuxt/ui'
+    '@nuxt/ui',
+    'nuxt-zod'
   ],
+
+  nuxtZod: {
+    zodVersion: 'v4'
+  },
 
   devtools: {
     enabled: true
