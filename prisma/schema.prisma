@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model actores {
+  id                  Int            @id @default(autoincrement())
+  nombre              String
+  institucion_id      Int
+  dependencia         String?
+  puesto              String?
+  bots                String[]       @default([])
+  vigente_desde       DateTime?      @db.Date
+  vigente_hasta       DateTime?      @db.Date
+  circunstancia       String?
+  circunstancia_hasta DateTime?      @db.Date
+  nota                String?
+  activo              Boolean?       @default(true)
+  instituciones       instituciones  @relation(fields: [institucion_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  bot_actores         bot_actores[]
+  candidaturas        candidaturas[]
+}
+
+model argostrc {
+  id         Int    @id @default(autoincrement())
+  session_id String @db.VarChar(255)
+  message    Json
+}
+
+model bot_paths {
+  usuario_id String    @id
+  path       String    @default("inicial")
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model candidaturas {
+  id            Int       @id @default(autoincrement())
+  actor_id      Int
+  proceso       String
+  distrito      String?
+  vigente_desde DateTime? @db.Date
+  vigente_hasta DateTime? @db.Date
+  actores       actores   @relation(fields: [actor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model categorias_tema {
+  id                                                   Int     @id @default(autoincrement())
+  nombre                                               String  @unique
+  temas_temas_categoria_idTocategorias_tema            temas[] @relation("temas_categoria_idTocategorias_tema")
+  temas_temas_categoria_secundaria_idTocategorias_tema temas[] @relation("temas_categoria_secundaria_idTocategorias_tema")
+}
+
+model chat {
+  id         Int    @id @default(autoincrement())
+  session_id String @db.VarChar
+  message    Json
+
+  @@index([session_id], map: "idx_chat_session_id")
+}
+
+model monitoreo {
+  id            BigInt    @id @default(autoincrement())
+  Fecha         String?
+  Usuario       String?
+  Titulo        String?
+  Dependencia   String?
+  Region        String?
+  Calificacion  String?
+  Medio         String?
+  Reportero     String?
+  Fuente        String?
+  Actor         String?
+  Tema          String?
+  Tipo          String?
+  Link          String?
+  Resumen       String?
+  Contexto      String?
+  Fragmento     String?
+  Personajes    String?
+  Instituciones String?
+  Municipio     String?
+  Estado        String?
+  createdAt     DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime? @default(now()) @db.Timestamp(6)
+  Categoria     String?
+
+  @@unique([Actor, Link], map: "unique_actor_link")
+}
+
+model n8n_chat_histories {
+  id         Int    @id @default(autoincrement())
+  session_id String @db.VarChar(255)
+  message    Json
+}
+
+model sinteia {
+  id         Int    @id @default(autoincrement())
+  session_id String @db.VarChar(255)
+  message    Json
+}
+
+model temas {
+  id                                                             Int              @id @default(autoincrement())
+  nombre                                                         String           @unique
+  activo                                                         Boolean?         @default(true)
+  categoria_id                                                   Int?
+  categoria_secundaria_id                                        Int?
+  categorias_tema_temas_categoria_idTocategorias_tema            categorias_tema? @relation("temas_categoria_idTocategorias_tema", fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  categorias_tema_temas_categoria_secundaria_idTocategorias_tema categorias_tema? @relation("temas_categoria_secundaria_idTocategorias_tema", fields: [categoria_secundaria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model instituciones {
+  id        Int       @id(map: "dependencias_pkey") @default(autoincrement())
+  nombre    String    @unique(map: "dependencias_nombre_key")
+  nivel     String
+  estado    String?
+  municipio String?
+  activa    Boolean?  @default(true)
+  actores   actores[]
+}
+
+model bots {
+  id                      Int           @id @default(autoincrement())
+  zona                    String        @unique(map: "bots_clave_key")
+  nombre                  String
+  institucion_contratante String?
+  medio                   String?
+  activo                  Boolean?      @default(true)
+  alcance                 String        @default("curado")
+  bot_actores             bot_actores[]
+}
+
+model bot_actores {
+  bot_id   Int
+  actor_id Int
+  actores  actores @relation(fields: [actor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  bots     bots    @relation(fields: [bot_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([bot_id, actor_id])
+}

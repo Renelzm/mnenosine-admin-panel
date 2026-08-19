@@ -1,0 +1,7 @@
+allowBuilds:
+  '@parcel/watcher': false
+  '@prisma/client': set this to true or false
+  '@tailwindcss/oxide': false
+  esbuild: false
+  unrs-resolver: false
+  vue-demi: false
