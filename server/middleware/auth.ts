@@ -1,4 +1,4 @@
-const RUTAS_PUBLICAS = ['/api/login']
+const RUTAS_PUBLICAS = ['/api/login', '/api/health']
 
 export default defineEventHandler(async (event) => {
   const rawPath = event.path ?? '/'

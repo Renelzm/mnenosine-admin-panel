@@ -31,6 +31,17 @@ export default defineNuxtConfig({
     enabled: true
   },
 
+  // Zod define `function process()` en v4/core/to-json-schema.js. Con pnpm, Vite no
+  // externaliza zod y lo inlinea en el bundle SSR, donde choca con el
+  // `import process from 'node:process'` que unenv inyecta al inicio de entry.mjs
+  // ("SyntaxError: Identifier 'process' has already been declared" en produccion).
+  // Externalizarlo lo deja en .output/server/node_modules y evita la colision.
+  vite: {
+    ssr: {
+      external: ['zod']
+    }
+  },
+
   css: ['~/assets/css/main.css'],
 
   compatibilityDate: '2026-06-30',
