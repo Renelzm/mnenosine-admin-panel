@@ -101,10 +101,10 @@ interface Bot {
 // dinámicamente con interpolación (ej. `text-${color}`), solo detecta strings completos en el código.
 // El fondo del círculo es el mismo (bg-muted) para todas las tarjetas; solo el color de ícono/número cambia.
 const CLASES_COLOR: Record<string, string> = {
-  actores: 'text-pink-700',
-  instituciones: 'text-amber-600',
-  temas: 'text-teal-700',
-  bots: 'text-gray-800'
+  actores: 'text-pink-700 dark:text-pink-400',
+  instituciones: 'text-amber-600 dark:text-amber-400',
+  temas: 'text-teal-700 dark:text-teal-400',
+  bots: 'text-gray-800 dark:text-gray-300'
 }
 
 const { data: instituciones } = useFetch<Institucion[]>('/api/instituciones')

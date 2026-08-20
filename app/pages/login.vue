@@ -30,7 +30,22 @@
         </UFormField>
 
         <UFormField label="Contraseña" name="password" required>
-          <UInput v-model="state.password" type="password" class="w-full" />
+          <UInput
+            v-model="state.password"
+            :type="mostrarPassword ? 'text' : 'password'"
+            class="w-full"
+          >
+            <template #trailing>
+              <UButton
+                :icon="mostrarPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                :aria-label="mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                @click="mostrarPassword = !mostrarPassword"
+              />
+            </template>
+          </UInput>
         </UFormField>
 
         <UButton label="Entrar" type="submit" block :loading="entrando" />
@@ -48,6 +63,7 @@ const state = reactive<{ email?: string, password?: string }>({})
 const formRef = ref()
 const entrando = ref(false)
 const error = ref('')
+const mostrarPassword = ref(false)
 
 const { fetch: refrescarSesion } = useUserSession()
 
