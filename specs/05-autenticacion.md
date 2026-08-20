@@ -1,6 +1,6 @@
 # SPEC 05 — Autenticación
 
-> **Estado:** APROBADO
+> **Estado:** IMPLEMENTADO
 > **Depende de:** SPEC 01
 > **Fecha:** 2026-08-19
 > **Objetivo:** Proteger todas las páginas y endpoints del panel con autenticación de sesión (`nuxt-auth-utils`) contra una nueva tabla `admins` en Mnemosine, agregando login/logout y mostrando el admin activo en `NavbarHeader.vue`, sin CRUD de usuarios todavía.
@@ -46,12 +46,10 @@ Después de crearla, `npx prisma db pull` la introspecta como `model admins` en 
 
 ```ts
 // shared/schemas/login.ts
-export default {
-  login: z.object({
-    email: z.string().email(),
-    password: z.string().min(8)
-  })
-}
+export default z.object({
+  email: z.string().email(),
+  password: z.string().min(8)
+})
 ```
 
 Convenciones:
@@ -74,14 +72,14 @@ Convenciones:
 
 ## Acceptance criteria
 
-- [ ] La tabla `admins` existe en Mnemosine y `schema.prisma` la refleja tras el `db pull`.
-- [ ] Login con credenciales válidas de un admin `activo=true` crea sesión y redirige a `/`.
-- [ ] Login con credenciales inválidas, o de un admin `activo=false`, responde un error genérico sin crear sesión.
-- [ ] Sin sesión, cualquier página del panel (`/`, `/instituciones`, `/temas`, `/actores`, `/bots`) redirige a `/login`.
-- [ ] Sin sesión, cualquier `/api/*` (excepto `/api/login` y `/api/_nuxt_icon/*`) responde 401.
-- [ ] Con sesión activa, todas las páginas y endpoints existentes (instituciones/temas/actores/bots) siguen funcionando exactamente igual que antes de este spec.
-- [ ] `NavbarHeader.vue` muestra el nombre del admin logueado y un botón "Cerrar sesión" que limpia la sesión y redirige a `/login`.
-- [ ] `pnpm lint` y `pnpm typecheck` pasan sin errores nuevos (los ya documentados como preexistentes en los specs 01-04 no cuentan).
+- [x] La tabla `admins` existe en Mnemosine y `schema.prisma` la refleja tras el `db pull`.
+- [x] Login con credenciales válidas de un admin `activo=true` crea sesión y redirige a `/`.
+- [x] Login con credenciales inválidas, o de un admin `activo=false`, responde un error genérico sin crear sesión (el mismo `if (!admin || !admin.activo)` cubre ambos casos con idéntica respuesta).
+- [x] Sin sesión, cualquier página del panel (`/`, `/instituciones`, `/temas`, `/actores`, `/bots`) redirige a `/login`.
+- [x] Sin sesión, cualquier `/api/*` (excepto `/api/login` y `/api/_nuxt_icon/*`) responde 401.
+- [x] Con sesión activa, todas las páginas y endpoints existentes (instituciones/temas/actores/bots) siguen funcionando exactamente igual que antes de este spec.
+- [x] El nav muestra el nombre del admin logueado y un botón "Cerrar sesión" que limpia la sesión y redirige a `/login` (ampliación durante la implementación: se movió de `NavbarHeader.vue` a un componente nuevo `SesionUsuario.vue` en el slot `#right` de `UHeader`, para que quedara en la esquina derecha real de la pantalla en vez de apretado junto a los links de navegación).
+- [x] `pnpm lint` y `pnpm typecheck` pasan sin errores nuevos (los ya documentados como preexistentes en los specs 01-04 no cuentan).
 
 ## Decisiones
 
@@ -92,6 +90,9 @@ Convenciones:
 - **No:** redirigir automáticamente fuera de `/login` si ya hay sesión activa — no se pidió; visitar `/login` logueado simplemente muestra el formulario de nuevo sin efecto.
 - **No:** RBAC o roles diferenciados — todos los admins tienen el mismo nivel de acceso; no hay necesidad documentada de diferenciarlos todavía.
 - **Reutiliza:** `nuxt-auth-utils` (ya estaba en `package.json`, discrepancia ya documentada en `CLAUDE.md` desde el spec 01 sobre `nuxt-users`), `UCard`+`UForm` para el login, mismo patrón visual del resto del panel.
+- **Sí (encontrado durante la implementación):** `useUserSession()` trae su propio endpoint interno automático (`/api/_auth/session`, GET/DELETE) para sincronizar el estado reactivo del cliente. El botón de logout usa `clear()` del composable (que pega a ese endpoint interno) en vez de nuestro `POST /api/logout` custom, porque sincroniza `loggedIn`/`user` sin necesitar recargar la página. `server/api/logout.post.ts` se deja igual (funciona por sí solo si algo externo lo necesita), pero la UI no lo usa directamente.
+- **Sí (encontrado durante la implementación):** la augmentación de tipos de `User` (`declare module '#auth-utils'`) vive en `shared/types/auth.d.ts`, no en `types/auth.d.ts` en la raíz — el `tsconfig` que genera Nuxt no incluye una carpeta `types/` en la raíz, pero sí `shared/**/*.d.ts`.
+- **Sí (encontrado durante la implementación):** se quita `routeRules: { '/': { prerender: true } }` de `nuxt.config.ts` (agregado en el spec 01). Una ruta prerenderizada se sirve como HTML estático generado en build, sin pasar por el middleware de servidor en cada request — dejarlo habría permitido que `/` quedara sin proteger en un build de producción, justo la ruta que este spec protege. Además `/` ya no es estática: `HeroStadisitics.vue` muestra conteos que cambian.
 
 ## Risks
 

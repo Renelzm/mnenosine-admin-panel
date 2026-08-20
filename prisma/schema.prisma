@@ -142,3 +142,11 @@ model bot_actores {
 
   @@id([bot_id, actor_id])
 }
+
+model admins {
+  id            Int      @id @default(autoincrement())
+  nombre        String
+  email         String   @unique
+  password_hash String
+  activo        Boolean? @default(true)
+}

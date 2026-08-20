@@ -29,6 +29,7 @@ useSeoMeta({
       </template>
 
       <template #right>
+        <SesionUsuario />
         <UColorModeButton />
       </template>
     </UHeader>

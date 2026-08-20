@@ -3,7 +3,8 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui',
-    'nuxt-zod'
+    'nuxt-zod',
+    'nuxt-auth-utils'
   ],
 
   nuxtZod: {
@@ -20,7 +21,8 @@ export default defineNuxtConfig({
         'lucide:bot',
         'lucide:pencil',
         'lucide:arrow-up-down',
-        'lucide:layout-dashboard'
+        'lucide:layout-dashboard',
+        'lucide:log-out'
       ]
     }
   },
@@ -30,10 +32,6 @@ export default defineNuxtConfig({
   },
 
   css: ['~/assets/css/main.css'],
-
-  routeRules: {
-    '/': { prerender: true }
-  },
 
   compatibilityDate: '2026-06-30',
 
