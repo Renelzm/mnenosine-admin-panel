@@ -105,6 +105,7 @@ Convenciones:
 - **Sí (ampliado durante la implementación):** `TablaActores.vue` muestra todas las columnas de datos del actor (dependencia, ambos rangos de fechas, circunstancia, nota, bots resueltos por nombre), con headers ordenables con un clic (sorting nativo de TanStack Table vía `UTable`), en vez del set reducido de columnas planeado originalmente.
 - **Sí:** en la UI, "bot alcance='curado'" se etiqueta como "bot segmentado"/"bots segmentados" (placeholder del filtro, label del checkbox group). Es solo texto visible — el valor real en la BD (`bots.alcance = 'curado'`) y los nombres de campos/variables internos (`bots_curados`) no cambian.
 - **No (fuera de alcance, recordado durante la implementación):** tarjeta de conteo de totales (actores/temas/instituciones) en `HeroStadisitics.vue` — ya estaba reservada para el spec 06 desde los specs 01/02; se mantiene ahí.
+- **Sí (ajuste posterior al cierre, durante el spec 04):** la columna "acciones" (botón editar) de `TablaActores.vue` se movió al principio de la tabla y se hizo `sticky left-0` — con 12 columnas de datos, el botón quedaba fuera de vista al hacer scroll horizontal.
 - **Reutiliza sin volver a decidir (mismo patrón que specs 01/02):** un solo componente para alta y edición (prop `actor?`), sin borrado físico, sin auth todavía, sin validación de duplicados en vivo mientras se escribe, modal `UModal`+`UForm` con `nuxt-zod`, reshape del `GET` en vez de exponer relaciones crudas de Prisma.
 
 ## Risks

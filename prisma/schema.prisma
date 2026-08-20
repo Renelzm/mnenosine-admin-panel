@@ -126,7 +126,7 @@ model instituciones {
 model bots {
   id                      Int           @id @default(autoincrement())
   zona                    String        @unique(map: "bots_clave_key")
-  nombre                  String
+  nombre                  String        @unique
   institucion_contratante String?
   medio                   String?
   activo                  Boolean?      @default(true)

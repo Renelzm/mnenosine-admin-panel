@@ -234,6 +234,16 @@ const filtrados = computed(() => {
 })
 
 const columns: TableColumn<Actor>[] = [
+  {
+    id: 'acciones',
+    header: '',
+    meta: {
+      class: {
+        th: 'sticky left-0 z-10 bg-elevated',
+        td: 'sticky left-0 z-10 bg-elevated'
+      }
+    }
+  },
   { accessorKey: 'activo', header: encabezadoOrdenable('Activo') },
   { id: 'bots', header: 'Bots' },
   { accessorKey: 'nombre', header: encabezadoOrdenable('Nombre') },
@@ -244,8 +254,7 @@ const columns: TableColumn<Actor>[] = [
   { accessorKey: 'vigente_desde', header: encabezadoOrdenable('Vigente desde') },
   { accessorKey: 'vigente_hasta', header: encabezadoOrdenable('Vigente hasta') },
   { accessorKey: 'circunstancia', header: encabezadoOrdenable('Circunstancia') },
-  { accessorKey: 'circunstancia_hasta', header: encabezadoOrdenable('Circunstancia hasta') },
-  { id: 'acciones', header: '' }
+  { accessorKey: 'circunstancia_hasta', header: encabezadoOrdenable('Circunstancia hasta') }
 ]
 
 defineExpose({ refresh })

@@ -18,7 +18,9 @@ export default defineNuxtConfig({
         'lucide:landmark',
         'lucide:tag',
         'lucide:bot',
-        'lucide:pencil'
+        'lucide:pencil',
+        'lucide:arrow-up-down',
+        'lucide:layout-dashboard'
       ]
     }
   },
