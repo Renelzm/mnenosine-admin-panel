@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const NIVELES = ['MUNICIPAL', 'ESTATAL', 'FEDERAL', 'AUTONOMO', 'IP', 'EDUCACION', 'OTROS'] as const
+const NIVELES = ['MUNICIPAL', 'ESTATAL', 'FEDERAL', 'AUTONOMO', 'IP', 'EDUCACION', 'PARTIDO POLITICO', 'OTROS'] as const
 
 export default {
   crear: z.object({

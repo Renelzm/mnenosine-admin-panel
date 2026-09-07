@@ -22,9 +22,18 @@ export default defineNuxtConfig({
         'lucide:pencil',
         'lucide:arrow-up-down',
         'lucide:layout-dashboard',
-        'lucide:log-out'
+        'lucide:log-out',
+        'lucide:file-text',
+        'lucide:download',
+        'lucide:monitor',
+        'lucide:smartphone',
+        'lucide:trash-2'
       ]
     }
+  },
+
+  runtimeConfig: {
+    n8nPdfWebhookUrl: process.env.N8N_PDF_WEBHOOK_URL || ''
   },
 
   devtools: {

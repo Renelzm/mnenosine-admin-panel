@@ -52,7 +52,7 @@ interface Institucion {
   activa: boolean | null
 }
 
-const NIVELES = ['MUNICIPAL', 'ESTATAL', 'FEDERAL', 'AUTONOMO', 'IP', 'EDUCACION', 'OTROS'] as const
+const NIVELES = ['MUNICIPAL', 'ESTATAL', 'FEDERAL', 'AUTONOMO', 'IP', 'EDUCACION', 'PARTIDO POLITICO', 'OTROS'] as const
 
 const props = defineProps<{
   institucion?: Institucion | null

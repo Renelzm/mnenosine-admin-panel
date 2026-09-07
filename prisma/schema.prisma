@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  provider        = "prisma-client-js"
+  output          = "../app/generated/prisma"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -8,21 +9,23 @@ datasource db {
 }
 
 model actores {
-  id                  Int            @id @default(autoincrement())
-  nombre              String         @unique
-  institucion_id      Int
-  dependencia         String?
-  puesto              String?
-  bots                String[]       @default([])
-  vigente_desde       DateTime?      @db.Date
-  vigente_hasta       DateTime?      @db.Date
-  circunstancia       String?
-  circunstancia_hasta DateTime?      @db.Date
-  nota                String?
-  activo              Boolean?       @default(true)
-  instituciones       instituciones  @relation(fields: [institucion_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  bot_actores         bot_actores[]
-  candidaturas        candidaturas[]
+  id                   Int                    @id @default(autoincrement())
+  nombre               String                 @unique
+  institucion_id       Int
+  dependencia          String?
+  puesto               String?
+  bots                 String[]               @default([])
+  vigente_desde        DateTime?              @db.Date
+  vigente_hasta        DateTime?              @db.Date
+  circunstancia        String?
+  circunstancia_hasta  DateTime?              @db.Date
+  nota                 String?
+  activo               Boolean?               @default(true)
+  instituciones        instituciones          @relation(fields: [institucion_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  bot_actores          bot_actores[]
+  candidaturas         candidaturas[]
+
+  @@index([nombre(ops: raw("gin_trgm_ops"))], map: "idx_actores_nombre_trgm", type: Gin)
 }
 
 model argostrc {
@@ -149,4 +152,149 @@ model admins {
   email         String   @unique
   password_hash String
   activo        Boolean? @default(true)
+}
+
+model argospdf {
+  id         Int    @id @default(autoincrement())
+  session_id String @db.VarChar(255)
+  message    Json
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model fb_analisis {
+  id                   BigInt      @id @default(autoincrement())
+  target_type          String      @db.VarChar(12)
+  target_id            BigInt
+  es_ataque            Boolean?
+  tipo_ataque          String?     @db.VarChar(32)
+  severidad            Int?        @db.SmallInt
+  sentimiento          String?     @db.VarChar(16)
+  personas_mencionadas String?
+  resumen              String?
+  modelo               String?     @default("gemini-2.5-flash") @db.VarChar(32)
+  fecha_analisis       DateTime?   @default(now()) @db.Timestamptz(6)
+  actor_id             BigInt?
+  actor_nombre         String?
+  cuenta_id            BigInt?
+  postura              String?     @db.VarChar(12)
+  fb_cuentas           fb_cuentas? @relation(fields: [cuenta_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([es_ataque], map: "idx_analisis_ataque", where: raw("(es_ataque = true)"))
+  @@index([target_type, target_id], map: "idx_analisis_target")
+}
+
+model fb_analisis_agregado {
+  id                    BigInt    @id @default(autoincrement())
+  post_id               BigInt
+  actor_id              BigInt?
+  pase                  Int?      @db.SmallInt
+  total_comentarios     Int?
+  comentarios_positivos Int?
+  comentarios_negativos Int?
+  comentarios_neutros   Int?
+  comentarios_ataque    Int?
+  severidad_promedio    Decimal?  @db.Decimal(4, 2)
+  score_sentimiento     Decimal?  @db.Decimal(4, 3)
+  sentimiento_general   String?   @db.VarChar(16)
+  temas_recurrentes     String?
+  resumen               String?
+  modelo                String?   @default("gemini-2.5-flash") @db.VarChar(32)
+  fecha_analisis        DateTime? @default(now()) @db.Timestamptz(6)
+  fb_posts              fb_posts  @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model fb_comentarios {
+  id                  BigInt            @id @default(autoincrement())
+  fb_comentario_id    String            @unique @db.VarChar(128)
+  post_id             BigInt
+  comentario_padre_id BigInt?
+  cuenta_id           BigInt?
+  texto               String?
+  fecha_comentario    DateTime?         @db.Timestamptz(6)
+  fecha_scrapeo       DateTime?         @default(now()) @db.Timestamptz(6)
+  nombre_cuenta       String?           @db.VarChar(255)
+  sentimiento         String?           @db.VarChar(255)
+  fb_comentaristas    fb_comentaristas? @relation(fields: [cuenta_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fb_posts            fb_posts          @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([cuenta_id], map: "idx_fb_comentarios_cuenta_id")
+  @@index([post_id], map: "idx_fb_comentarios_post_id")
+}
+
+model fb_comentaristas {
+  id                       BigInt           @id @default(autoincrement())
+  fb_profile_id            String?
+  fb_profile_url           String?          @unique
+  nombre_mostrado          String?
+  primera_vez_visto        DateTime?        @default(now()) @db.Timestamptz(6)
+  ultima_vez_visto         DateTime?        @default(now()) @db.Timestamptz(6)
+  veces_comentado          Int?             @default(0)
+  veces_detectado_atacando Int?             @default(0)
+  fb_comentarios           fb_comentarios[]
+}
+
+model fb_cuentas {
+  id                       BigInt        @id @default(autoincrement())
+  fb_profile_id            String?       @db.VarChar(64)
+  fb_profile_url           String?       @unique
+  nombre_mostrado          String?
+  primera_vez_visto        DateTime?     @default(now()) @db.Timestamptz(6)
+  ultima_vez_visto         DateTime?     @default(now()) @db.Timestamptz(6)
+  veces_detectado_atacando Int?          @default(0)
+  activo                   Boolean?      @default(true)
+  privada                  Boolean?      @default(false)
+  fb_analisis              fb_analisis[]
+}
+
+model fb_posts {
+  id                    BigInt                 @id @default(autoincrement())
+  fb_post_id            String                 @unique @db.VarChar(128)
+  pagina_url            String
+  pagina_nombre         String?
+  url                   String
+  texto                 String?
+  fecha_publicacion     DateTime?              @db.Timestamptz(6)
+  fecha_scrapeo         DateTime?              @default(now()) @db.Timestamptz(6)
+  ultima_vez_visto      DateTime?              @default(now()) @db.Timestamptz(6)
+  total_comentarios     Int?
+  total_compartidos     Int?
+  apify_run_id          String?
+  menciona_catalogo     Boolean?               @default(false)
+  actor_id              BigInt?
+  candidato_profundizar Boolean?               @default(false)
+  pases_completados     Int?                   @default(0) @db.SmallInt
+  proximo_pase_en       DateTime?              @db.Timestamptz(6)
+  seguimiento_activo    Boolean?               @default(true)
+  fb_analisis_agregado  fb_analisis_agregado[]
+  fb_comentarios        fb_comentarios[]
+
+  @@index([pagina_url], map: "idx_fb_posts_pagina")
+  @@index([proximo_pase_en], map: "idx_fb_posts_pendientes", where: raw("(seguimiento_activo AND candidato_profundizar)"))
+  @@index([texto(ops: raw("gin_trgm_ops"))], map: "idx_fb_posts_texto_trgm", type: Gin)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model fb_reacciones {
+  id            BigInt    @id @default(autoincrement())
+  target_type   String    @db.VarChar(12)
+  target_id     BigInt
+  tipo          String    @db.VarChar(12)
+  conteo        Int
+  fecha_captura DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([target_type, target_id], map: "idx_reacciones_target")
+}
+
+model pdf_actores {
+  id                  Int       @id @default(autoincrement())
+  created_at          DateTime  @default(now()) @db.Timestamp(6)
+  nombre_actor        String    @db.VarChar(255)
+  instruccion_reporte String?
+  caducidad           DateTime? @db.Date
+  activo              Boolean?  @default(true)
+  correo              String?   @db.VarChar(255)
+  whatsapp            Decimal?  @db.Decimal
+  tipo_reporte        String?   @default("general") @db.VarChar(255)
+  cliente_propsecto   String    @db.VarChar(255)
+  descripcion         String?
 }
