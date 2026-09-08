@@ -16,6 +16,7 @@ export default defineNuxtConfig({
     clientBundle: {
       icons: [
         'lucide:users',
+        'lucide:user',
         'lucide:landmark',
         'lucide:tag',
         'lucide:bot',
@@ -27,13 +28,18 @@ export default defineNuxtConfig({
         'lucide:download',
         'lucide:monitor',
         'lucide:smartphone',
-        'lucide:trash-2'
+        'lucide:trash-2',
+        'lucide:send',
+        'lucide:mail',
+        'lucide:message-circle',
+        'lucide:triangle-alert'
       ]
     }
   },
 
   runtimeConfig: {
-    n8nPdfWebhookUrl: process.env.N8N_PDF_WEBHOOK_URL || ''
+    n8nPdfWebhookUrl: process.env.N8N_PDF_WEBHOOK_URL || '',
+    n8nEnviarReporteWebhookUrl: process.env.N8N_ENVIAR_REPORTE_WEBHOOK_URL || ''
   },
 
   devtools: {

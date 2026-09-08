@@ -71,9 +71,19 @@
           :loading="borrandoId === row.original.id"
           @click="confirmarBorrado(row.original)"
         />
+        <UButton
+          icon="i-lucide-send"
+          size="xs"
+          color="primary"
+          variant="ghost"
+          aria-label="Enviar reporte al cliente"
+          @click="abrirConfirmarEnvio(row.original)"
+        />
       </div>
     </template>
   </UTable>
+
+  <ConfirmarEnvioReporte v-model:open="modalEnviarAbierto" :reporte="reporteEnviando" />
 </template>
 
 <script lang="ts" setup>
@@ -103,6 +113,8 @@ type TipoDescarga = 'escritorio' | 'movil'
 const toast = useToast()
 const descargando = ref<{ id: number, tipo: TipoDescarga } | null>(null)
 const borrandoId = ref<number | null>(null)
+const modalEnviarAbierto = ref(false)
+const reporteEnviando = ref<ReportePdf | null>(null)
 
 const columns: TableColumn<ReportePdf>[] = [
   { accessorKey: 'cliente_propsecto', header: 'Cliente prospecto' },
@@ -143,6 +155,11 @@ function confirmarBorrado(reporte: ReportePdf) {
   // eslint-disable-next-line no-alert
   if (!confirm(`¿Eliminar el reporte de "${reporte.cliente_propsecto}"? Esta acción no se puede deshacer.`)) return
   borrar(reporte)
+}
+
+function abrirConfirmarEnvio(reporte: ReportePdf) {
+  reporteEnviando.value = reporte
+  modalEnviarAbierto.value = true
 }
 
 async function borrar(reporte: ReportePdf) {
