@@ -32,7 +32,22 @@ export default defineNuxtConfig({
         'lucide:send',
         'lucide:mail',
         'lucide:message-circle',
-        'lucide:triangle-alert'
+        'lucide:triangle-alert',
+        'lucide:share-2',
+        'lucide:chevron-down',
+        'lucide:plus',
+        'lucide:external-link',
+        'lucide:syringe',
+        'lucide:newspaper',
+        'lucide:tv',
+        'lucide:upload',
+        'lucide:file',
+        'lucide:x',
+        'lucide:calendar',
+        'lucide:check',
+        'simple-icons:facebook',
+        'simple-icons:youtube',
+        'simple-icons:tiktok'
       ]
     }
   },

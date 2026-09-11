@@ -1,21 +1,35 @@
 <template>
-  <div v-if="user" class="flex shrink-0 items-center gap-2">
-    <span class="hidden text-sm text-muted sm:inline">{{ user.nombre }}</span>
+  <UDropdownMenu v-if="user" :items="items" size="sm" :content="{ align: 'end' }">
     <UButton
-      label="Cerrar sesión"
-      icon="i-lucide-log-out"
       color="neutral"
       variant="ghost"
-      @click="cerrarSesion"
-    />
-  </div>
+      class="rounded-full p-0"
+      aria-label="Cuenta"
+    >
+      <UAvatar :text="inicial" size="sm" />
+    </UButton>
+  </UDropdownMenu>
 </template>
 
 <script lang="ts" setup>
+import type { DropdownMenuItem } from '@nuxt/ui'
+
 const { user, clear } = useUserSession()
+
+const inicial = computed(() => user.value?.nombre?.trim().charAt(0).toUpperCase() ?? '?')
 
 async function cerrarSesion() {
   await clear()
   await navigateTo('/login')
 }
+
+const items = computed<DropdownMenuItem[][]>(() => [
+  [
+    { label: user.value?.nombre ?? '', type: 'label' },
+    { label: user.value?.email ?? '', type: 'label' }
+  ],
+  [
+    { label: 'Cerrar sesión', icon: 'i-lucide-log-out', color: 'error', onSelect: cerrarSesion }
+  ]
+])
 </script>

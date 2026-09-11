@@ -29,8 +29,8 @@ useSeoMeta({
       <NavbarHeader />
 
       <template #right>
-        <SesionUsuario />
         <UColorModeButton />
+        <SesionUsuario />
       </template>
 
       <template #body>
