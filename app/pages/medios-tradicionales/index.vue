@@ -6,7 +6,7 @@
       icon="i-lucide-newspaper"
     />
 
-    <SeccionColapsable titulo="Medios impresos" icon="i-lucide-newspaper" default-open>
+    <SeccionColapsable titulo="Medios impresos" icon="i-lucide-newspaper" icon-class="size-6 text-gray-700 dark:text-gray-300" default-open>
       <UForm
         ref="formImpresosRef"
         :schema="schemaImpresos"
@@ -39,7 +39,13 @@
       </UForm>
     </SeccionColapsable>
 
-    <SeccionColapsable titulo="TV y Radio" icon="i-lucide-tv" default-open>
+    <SeccionColapsable
+      titulo="TV y Radio"
+      icon="i-lucide-tv"
+      icon-class="size-6 text-amber-700 dark:text-amber-400"
+      icon-wrapper-class="bg-slate-200 dark:bg-slate-700 p-1.5"
+      default-open
+    >
       <UForm
         ref="formTvRadioRef"
         :schema="schemaTvRadio"
@@ -47,8 +53,12 @@
         class="space-y-4"
         @submit="enviarTvRadio"
       >
-        <UFormField label="Tipo de medio" name="tipo_medio" required>
-          <USelect v-model="stateTvRadio.tipo_medio" :items="['TV', 'Radio']" class="w-full sm:w-48" />
+        <UFormField label="Tipo de medio" required>
+          <USelect v-model="tipoMedioSeleccion" :items="['TV', 'Radio', 'Libre']" class="w-full sm:w-48" />
+        </UFormField>
+
+        <UFormField v-if="tipoMedioSeleccion === 'Libre'" label="Especifica el tipo de medio" name="tipo_medio" required>
+          <UInput v-model="tipoMedioLibre" placeholder="Ej. Podcast, Streaming..." class="w-full sm:w-64" />
         </UFormField>
 
         <UFormField label="Medio o programa" name="medio_programa" required>
@@ -132,7 +142,7 @@ async function enviarImpresos(event: FormSubmitEvent<any>) {
 
 const schemaTvRadio = useZodSchemas().mediosTradicionales.tvRadio
 const stateTvRadio = reactive<{
-  tipo_medio?: 'TV' | 'Radio'
+  tipo_medio?: string
   medio_programa?: string
   detalle_reporteros?: string
   fecha_emision: string
@@ -141,6 +151,19 @@ const stateTvRadio = reactive<{
 const archivoTexto = ref<File | null>(null)
 const enviandoTvRadio = ref(false)
 const formTvRadioRef = ref()
+
+const tipoMedioSeleccion = ref<'TV' | 'Radio' | 'Libre' | undefined>(undefined)
+const tipoMedioLibre = ref<string | undefined>(undefined)
+
+watch(tipoMedioSeleccion, (seleccion) => {
+  if (seleccion !== 'Libre') {
+    tipoMedioLibre.value = undefined
+  }
+})
+
+watch([tipoMedioSeleccion, tipoMedioLibre], ([seleccion, libre]) => {
+  stateTvRadio.tipo_medio = seleccion === 'Libre' ? libre : seleccion
+})
 
 function cargarArchivoTexto() {
   const archivo = archivoTexto.value
@@ -160,7 +183,8 @@ async function enviarTvRadio(event: FormSubmitEvent<any>) {
     await $fetch('/api/medios-tradicionales/tv-radio', { method: 'POST', body: event.data })
 
     toast.add({ title: 'Registro enviado', color: 'success' })
-    stateTvRadio.tipo_medio = undefined
+    tipoMedioSeleccion.value = undefined
+    tipoMedioLibre.value = undefined
     stateTvRadio.medio_programa = undefined
     stateTvRadio.detalle_reporteros = undefined
     stateTvRadio.fecha_emision = hoy()

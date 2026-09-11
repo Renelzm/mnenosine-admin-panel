@@ -6,7 +6,7 @@ export default {
     fecha: z.string().min(1)
   }),
   tvRadio: z.object({
-    tipo_medio: z.enum(['TV', 'Radio']),
+    tipo_medio: z.string().min(1),
     medio_programa: z.string().min(1),
     detalle_reporteros: z.string().optional(),
     fecha_emision: z.string().min(1),

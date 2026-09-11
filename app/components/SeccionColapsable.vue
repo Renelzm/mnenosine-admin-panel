@@ -6,7 +6,9 @@
         class="flex w-full items-center justify-between gap-2 p-4 sm:p-6 text-left"
       >
         <div class="flex items-center gap-2">
-          <UIcon v-if="icon" :name="icon" class="size-5" :class="iconClass ?? 'text-primary'" />
+          <div v-if="icon" class="flex items-center justify-center rounded-md" :class="iconWrapperClass">
+            <UIcon :name="icon" :class="iconClass ?? 'size-5 text-primary'" />
+          </div>
           <span class="font-semibold">{{ titulo }}</span>
         </div>
         <UIcon
@@ -30,6 +32,7 @@ const props = withDefaults(defineProps<{
   titulo: string
   icon?: string
   iconClass?: string
+  iconWrapperClass?: string
   defaultOpen?: boolean
 }>(), { defaultOpen: false })
 
