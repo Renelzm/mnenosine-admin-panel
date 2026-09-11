@@ -24,7 +24,7 @@
         </UFormField>
 
         <UFormField label="Tipo de reporte" name="tipo_reporte">
-          <UInput v-model="state.tipo_reporte" placeholder="general" class="w-full" />
+          <USelect v-model="state.tipo_reporte" :items="TIPOS_REPORTE" placeholder="general" class="w-full" />
         </UFormField>
 
         <UFormField label="Instrucción del reporte" name="instruccion_reporte">
@@ -60,6 +60,8 @@
 
 <script lang="ts" setup>
 import type { FormSubmitEvent } from '@nuxt/ui'
+
+const TIPOS_REPORTE = ['general', 'facebook', 'prueba']
 
 interface ReportePdf {
   id: number
