@@ -57,14 +57,14 @@ const emit = defineEmits<{
 const { data, refresh, status } = useFetch<Bot[]>('/api/bots')
 
 const columns: TableColumn<Bot>[] = [
+  { id: 'acciones', header: '' },
+  { accessorKey: 'activo', header: 'Activo' },
   { accessorKey: 'zona', header: 'Zona' },
   { accessorKey: 'nombre', header: 'Nombre' },
   { accessorKey: 'alcance', header: 'Alcance' },
   { accessorKey: 'medio', header: 'Medio' },
   { accessorKey: 'institucion_contratante', header: 'Institución contratante' },
-  { accessorKey: 'actores_mapeados', header: 'Total de actores mapeados' },
-  { accessorKey: 'activo', header: 'Activo' },
-  { id: 'acciones', header: '' }
+  { accessorKey: 'actores_mapeados', header: 'Total de actores mapeados' }
 ]
 
 defineExpose({ refresh })

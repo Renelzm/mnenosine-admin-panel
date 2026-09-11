@@ -35,15 +35,18 @@
     </template>
 
     <template #acciones-cell="{ row }">
+      <UButton
+        icon="i-lucide-pencil"
+        size="xs"
+        color="neutral"
+        variant="ghost"
+        aria-label="Editar reporte"
+        @click="emit('editar', row.original)"
+      />
+    </template>
+
+    <template #descargar_pdf-cell="{ row }">
       <div class="flex gap-1">
-        <UButton
-          icon="i-lucide-pencil"
-          size="xs"
-          color="neutral"
-          variant="ghost"
-          aria-label="Editar reporte"
-          @click="emit('editar', row.original)"
-        />
         <UButton
           icon="i-lucide-monitor"
           size="xs"
@@ -62,24 +65,30 @@
           :loading="estaDescargando(row.original, 'movil')"
           @click="descargar(row.original, 'movil')"
         />
-        <UButton
-          icon="i-lucide-trash-2"
-          size="xs"
-          color="error"
-          variant="ghost"
-          aria-label="Eliminar reporte"
-          :loading="borrandoId === row.original.id"
-          @click="confirmarBorrado(row.original)"
-        />
-        <UButton
-          icon="i-lucide-send"
-          size="xs"
-          color="primary"
-          variant="ghost"
-          aria-label="Enviar reporte al cliente"
-          @click="abrirConfirmarEnvio(row.original)"
-        />
       </div>
+    </template>
+
+    <template #eliminar-cell="{ row }">
+      <UButton
+        icon="i-lucide-trash-2"
+        size="xs"
+        color="error"
+        variant="ghost"
+        aria-label="Eliminar reporte"
+        :loading="borrandoId === row.original.id"
+        @click="confirmarBorrado(row.original)"
+      />
+    </template>
+
+    <template #enviar-cell="{ row }">
+      <UButton
+        icon="i-lucide-send"
+        size="xs"
+        color="primary"
+        variant="ghost"
+        aria-label="Enviar reporte al cliente"
+        @click="abrirConfirmarEnvio(row.original)"
+      />
     </template>
   </UTable>
 
@@ -117,6 +126,9 @@ const modalEnviarAbierto = ref(false)
 const reporteEnviando = ref<ReportePdf | null>(null)
 
 const columns: TableColumn<ReportePdf>[] = [
+  { id: 'acciones', header: '' },
+  { accessorKey: 'activo', header: 'Activo' },
+  { id: 'descargar_pdf', header: 'Descargar PDF' },
   { accessorKey: 'cliente_propsecto', header: 'Cliente prospecto' },
   { accessorKey: 'descripcion', header: 'Descripción' },
   { accessorKey: 'nombre_actor', header: 'Nombre del actor' },
@@ -125,8 +137,8 @@ const columns: TableColumn<ReportePdf>[] = [
   { accessorKey: 'correo', header: 'Correo' },
   { accessorKey: 'whatsapp', header: 'WhatsApp' },
   { accessorKey: 'caducidad', header: 'Caducidad' },
-  { accessorKey: 'activo', header: 'Activo' },
-  { id: 'acciones', header: '' }
+  { id: 'eliminar', header: 'Eliminar' },
+  { id: 'enviar', header: 'Enviar' }
 ]
 
 function estaDescargando(reporte: ReportePdf, tipo: TipoDescarga) {

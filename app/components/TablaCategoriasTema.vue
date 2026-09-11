@@ -33,8 +33,8 @@ const emit = defineEmits<{
 const { data, refresh, status } = useFetch<CategoriaTema[]>('/api/categorias-tema')
 
 const columns: TableColumn<CategoriaTema>[] = [
-  { accessorKey: 'nombre', header: 'Nombre' },
-  { id: 'acciones', header: '' }
+  { id: 'acciones', header: '' },
+  { accessorKey: 'nombre', header: 'Nombre' }
 ]
 
 defineExpose({ refresh })

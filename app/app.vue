@@ -24,13 +24,17 @@ useSeoMeta({
         <NuxtLink to="/" class="text-lg font-bold shrink-0">
           ARGOS
         </NuxtLink>
-
-        <NavbarHeader />
       </template>
+
+      <NavbarHeader />
 
       <template #right>
         <SesionUsuario />
         <UColorModeButton />
+      </template>
+
+      <template #body>
+        <NavbarHeader vertical />
       </template>
     </UHeader>
 

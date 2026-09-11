@@ -1,5 +1,8 @@
 <template>
-  <nav class="flex items-center gap-1 overflow-x-auto">
+  <nav
+    class="flex gap-1"
+    :class="vertical ? 'flex-col items-stretch' : 'items-center overflow-x-auto'"
+  >
     <UButton
       v-for="link in links"
       :key="link.to"
@@ -8,12 +11,15 @@
       :label="link.label"
       color="neutral"
       :variant="route.path.startsWith(link.to) ? 'soft' : 'ghost'"
-      class="shrink-0"
+      :block="vertical"
+      :class="vertical ? 'justify-start' : 'shrink-0'"
     />
   </nav>
 </template>
 
 <script lang="ts" setup>
+withDefaults(defineProps<{ vertical?: boolean }>(), { vertical: false })
+
 const route = useRoute()
 
 const links = [

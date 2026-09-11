@@ -46,12 +46,12 @@ const emit = defineEmits<{
 const { data, refresh, status } = useFetch<Institucion[]>('/api/instituciones')
 
 const columns: TableColumn<Institucion>[] = [
+  { id: 'acciones', header: '' },
+  { accessorKey: 'activa', header: 'Activa' },
   { accessorKey: 'nombre', header: 'Nombre' },
   { accessorKey: 'nivel', header: 'Nivel' },
   { accessorKey: 'estado', header: 'Estado' },
-  { accessorKey: 'municipio', header: 'Municipio' },
-  { accessorKey: 'activa', header: 'Activa' },
-  { id: 'acciones', header: '' }
+  { accessorKey: 'municipio', header: 'Municipio' }
 ]
 
 defineExpose({ refresh })
