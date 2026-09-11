@@ -1,4 +1,4 @@
-const TIMEOUT_MS = 30_000
+const TIMEOUT_MS = 180_000 // algunos reportes tardan hasta ~1min40s en generarse
 
 export default defineEventHandler(async (event) => {
   const z = useZod()
